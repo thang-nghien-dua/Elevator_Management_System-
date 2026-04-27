@@ -1,10 +1,8 @@
 #include "Elevator_Management_System.h"
-#include <iostream>
 
-using namespace std;
-
+// ==========================================
 // INSERT SORTED: Chèn Passenger vào danh sách theo thứ tự tầng
-
+// ==========================================
 void DestinationList::insertSorted(Passenger p)
 {
     Node* newNode = new Node(p);
@@ -13,6 +11,7 @@ void DestinationList::insertSorted(Passenger p)
     if (head == nullptr)
     {
         head = newNode;
+        passengerCount++;
         return;
     }
 
@@ -21,6 +20,7 @@ void DestinationList::insertSorted(Passenger p)
     {
         newNode->next = head;
         head = newNode;
+        passengerCount++;
         return;
     }
 
@@ -34,19 +34,25 @@ void DestinationList::insertSorted(Passenger p)
 
     newNode->next = current->next;
     current->next = newNode;
+    passengerCount++;
 }
 
-
+// ==========================================
 // REMOVE BY FLOOR: Xóa tất cả hành khách có tầng đích = floor
-
-void DestinationList::removeByFloor(int floor)
+// Trả về tổng trọng lượng đã trả
+// ==========================================
+float DestinationList::removeByFloor(int floor)
 {
+    float removedWeight = 0;
+
     // Xóa ở đầu danh sách
     while (head != nullptr && head->data.toFloor == floor)
     {
         Node* temp = head;
+        removedWeight += temp->data.weight;
         head = head->next;
         delete temp;
+        passengerCount--;
     }
 
     // Xóa các node phía sau
@@ -56,19 +62,23 @@ void DestinationList::removeByFloor(int floor)
         if (current->next->data.toFloor == floor)
         {
             Node* temp = current->next;
+            removedWeight += temp->data.weight;
             current->next = temp->next;
             delete temp;
+            passengerCount--;
         }
         else
         {
             current = current->next;
         }
     }
+
+    return removedWeight;
 }
 
-
+// ==========================================
 // CONTAINS: Kiểm tra có khách nào xuống tại tầng này không
-
+// ==========================================
 bool DestinationList::contains(int floor)
 {
     Node* current = head;
@@ -84,7 +94,21 @@ bool DestinationList::contains(int floor)
     return false;
 }
 
-void displayDestinationList(Node* head)
+// ==========================================
+// GET NEXT STOP: Lấy tầng tiếp theo cần dừng
+// ==========================================
+int DestinationList::getNextStop()
+{
+    if (head == nullptr)
+        return -1;
+
+    return head->data.toFloor;
+}
+
+// ==========================================
+// DISPLAY: Hiển thị danh sách tầng cần trả khách
+// ==========================================
+void DestinationList::display()
 {
     if (head == nullptr)
     {
@@ -92,15 +116,35 @@ void displayDestinationList(Node* head)
         return;
     }
 
-    cout << "Danh sach diem tra (floor):\n";
+    cout << "\n--- DANH SACH KHACH TRONG THANG MAY ---\n";
+    cout << "So khach: " << passengerCount << "\n";
 
+    Node* current = head;
+    int stt = 1;
+    while (current != nullptr)
+    {
+        cout << stt << ". ID: " << current->data.id
+             << " | Xuong tang: " << current->data.toFloor
+             << " | Nang: " << current->data.weight << " kg"
+             << endl;
+
+        current = current->next;
+        stt++;
+    }
+    cout << "---------------------------------------\n";
+}
+
+// ==========================================
+// TOTAL WEIGHT: Tính tổng trọng lượng trong thang
+// ==========================================
+float DestinationList::totalWeight()
+{
+    float total = 0;
     Node* current = head;
     while (current != nullptr)
     {
-        cout << "ID: " << current->data.id
-            << " | To Floor: " << current->data.toFloor
-            << " | Weight: " << current->data.weight << endl;
-
+        total += current->data.weight;
         current = current->next;
     }
+    return total;
 }

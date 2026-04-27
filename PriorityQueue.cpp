@@ -49,6 +49,18 @@ Passenger PriorityQueue::pop()
 }
 
 // ==========================================
+// PEEK: Xem khách ưu tiên nhất (không xóa)
+// ==========================================
+Passenger PriorityQueue::peek()
+{
+    if (front == nullptr)
+    {
+        return Passenger(0, 0, 0, 0);
+    }
+    return front->data;
+}
+
+// ==========================================
 // UPDATE PRIORITY (QUAN TRỌNG)
 // Sắp xếp lại theo khoảng cách gần nhất
 // ==========================================
@@ -83,4 +95,107 @@ void PriorityQueue::updatePriority(int currentFloor)
         }
 
     } while (swapped);
+}
+
+// ==========================================
+// DISPLAY: Hiển thị danh sách khách đang chờ
+// ==========================================
+void PriorityQueue::display()
+{
+    if (front == nullptr)
+    {
+        cout << "Hang doi trong! Khong co khach nao dang cho.\n";
+        return;
+    }
+
+    cout << "\n--- DANH SACH KHACH DANG CHO THANG MAY ---\n";
+    cout << "So luong: " << count << " khach\n";
+
+    Node* temp = front;
+    int stt = 1;
+    while (temp != nullptr)
+    {
+        cout << stt << ". ID: " << temp->data.id
+             << " | Tang goi: " << temp->data.fromFloor
+             << " | Tang den: " << temp->data.toFloor
+             << " | Nang: " << temp->data.weight << " kg"
+             << endl;
+        temp = temp->next;
+        stt++;
+    }
+    cout << "-------------------------------------------\n";
+}
+
+// ==========================================
+// HAS PASSENGER AT: Kiểm tra có khách chờ ở tầng này không
+// ==========================================
+bool PriorityQueue::hasPassengerAt(int floor)
+{
+    Node* temp = front;
+    while (temp != nullptr)
+    {
+        if (temp->data.fromFloor == floor)
+            return true;
+        temp = temp->next;
+    }
+    return false;
+}
+
+// ==========================================
+// POP ALL AT: Lấy tất cả khách chờ tại tầng (xóa khỏi queue)
+// ==========================================
+Node* PriorityQueue::popAllAt(int floor)
+{
+    Node* result = nullptr;
+    Node* resultTail = nullptr;
+
+    // Xóa từ đầu
+    while (front != nullptr && front->data.fromFloor == floor)
+    {
+        Node* temp = front;
+        front = front->next;
+        temp->next = nullptr;
+        count--;
+
+        if (result == nullptr)
+        {
+            result = temp;
+            resultTail = temp;
+        }
+        else
+        {
+            resultTail->next = temp;
+            resultTail = temp;
+        }
+    }
+
+    // Xóa từ giữa/cuối
+    Node* curr = front;
+    while (curr != nullptr && curr->next != nullptr)
+    {
+        if (curr->next->data.fromFloor == floor)
+        {
+            Node* temp = curr->next;
+            curr->next = temp->next;
+            temp->next = nullptr;
+            count--;
+
+            if (result == nullptr)
+            {
+                result = temp;
+                resultTail = temp;
+            }
+            else
+            {
+                resultTail->next = temp;
+                resultTail = temp;
+            }
+        }
+        else
+        {
+            curr = curr->next;
+        }
+    }
+
+    return result;
 }

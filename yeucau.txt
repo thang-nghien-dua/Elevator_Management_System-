@@ -1,0 +1,52 @@
+yêu cầu bài làm 
+2. Cài đặt, đánh giá, và chuẩn bị dữ liệu demo
+
+?  Cài đặt: Cài đặt chương trình bằng ngôn ngữ C++. Chương trình cần sử dụng các cấu trúc dữ liệu đã chọn và một số thuật toán đã học (tìm kiếm, sắp xếp). Lưu ý: Có thể lập trình hướng thủ tục hoặc lập trình hướng đối tượng.
+
+?  Đánh giá hiệu năng: Thử nghiệm chương trình với các bộ dữ liệu có kích thước khác nhau để đưa ra đánh giá kết luận.
+
+?  Chuẩn bị dữ liệu demo: Tạo sẵn bộ dữ liệu lưu dưới dạng file .txt để demo chương trình khi thuyết trình.
+
+3. Hướng dẫn nộp báo cáo
+
+?  Tạo thư mục đặt tên CourseProject_MaNhom (VD: CourseProject_Nhom01).
+
+?   Trong thư mục đã tạo chứa các file như sau:
+
+o   File Báo cáo: Trình bày các nội dung của bước phân tích và thiết kế. Đặt tên file theo cấu trúc: Report_MaNhom.docx
+
+o   Source code: Đưa vào các tệp tin mã nguồn có đuôi .cpp hoặc .h chứa chương trình.
+
+o   File dữ liệu: gồm các file dữ liệu dùng để đánh giá hiệu năng và dữ liệu để demo khi thuyết trình. Đặt tên file theo cấu trúc: TestData_MaNhom.txt và DemoData_MaNhom.txt.
+
+?  Nén thư mục và nộp bài lên trang courses. Lưu ý: nộp đúng vị trí và theo deadline. Các trường hợp nộp qua các kênh khác hoặc trễ deadline sẽ không được báo cáo.
+
+ đề tài 
+1
+
+Quản lý hoạt động thang máy chung cư (Queue, Linked list)
+
+Sử dụng hàng đợi ưu tiên để quản lý thông tin bấm gọi chờ thang máy (danh sách điểm đón khách): vị trí tầng, hướng đi lên/xuống.
+
+Sử dụng 1 cấu trúc hợp lý để quản lý thang máy. Thông tin cơ bản cần có: vị trí, trọng tải tối đa, trọng tải đang chở, danh sách điểm trả khách.
+
+-       Khởi tạo các giá trị
+
+-       Tính năng gọi thang máy (hàng đợi chờ thang máy).
+
+-       Tính năng đón/trả khách (người ra/vào)
+
+
+-       Hiển thị danh sách chờ thang máy.
+
+-       Hiển thị danh sách thang máy cần trả khách.
+
+Ghi chú: Xác định thuật toán đường đi tối ưu nhất của thang máy cho quá trình đón/trả khách
+
+nhóm đã họp bàn và chọn ra những thuật toán và cấu trúc dữ liệu
+
++ Queue
++ Linked
++ Scan
++ Priority Scheduling (Hàng đợi ưu tiên)
++ Thuật toán chọn hướng (Direction Decision)
