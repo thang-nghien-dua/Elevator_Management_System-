@@ -8,16 +8,12 @@
 
 using namespace std;
 
-// Định nghĩa các trạng thái hướng đi cho chuyên nghiệp
 enum Direction {
     UP = 1,
     DOWN = -1,
     IDLE = 0
 };
 
-// ==========================================
-// 1. Thực thể Hành khách
-// ==========================================
 struct Passenger {
     int id;
     int fromFloor;
@@ -31,9 +27,6 @@ struct Passenger {
     }
 };
 
-// ==========================================
-// 2. Nút trong danh sách liên kết
-// ==========================================
 struct Node {
     Passenger data;
     Node* next;
@@ -41,9 +34,6 @@ struct Node {
     Node(Passenger p) : data(p), next(nullptr) {}
 };
 
-// ==========================================
-// 3. Linked List cơ bản (Quản lý hành khách)
-// ==========================================
 class LinkedList {
 private:
     Node* head;
@@ -60,9 +50,6 @@ public:
     Node* getHead() { return head; }
 };
 
-// ==========================================
-// 4. Hàng đợi ưu tiên (Quản lý khách đang đợi ngoài)
-// ==========================================
 class PriorityQueue {
 private:
     Node* front;
@@ -70,36 +57,21 @@ private:
 
 public:
     PriorityQueue() : front(nullptr), count(0) {}
+    ~PriorityQueue();
 
-    // Thêm khách vào hàng đợi ưu tiên
     void push(Passenger p);
-
-    // Lấy khách hàng phù hợp nhất ra
     Passenger pop();
-
-    // Cập nhật lại độ ưu tiên dựa trên vị trí thang máy (Priority Scheduling)
     void updatePriority(int currentFloor);
-
-    // Hien thi danh sach khach dang cho
     void display();
-
-    // Lấy khách phù hợp nhất theo hướng hiện tại (không xóa)
     Passenger peek();
-
-    // Kiểm tra có khách chờ ở tầng này không
     bool hasPassengerAt(int floor);
-
-    // Lấy tất cả khách chờ tại tầng (xóa khỏi queue)
-    // Trả về linked list tạm
     Node* popAllAt(int floor);
-
     bool isEmpty() { return front == nullptr; }
     int size() { return count; }
+    void clear();
+    Node* getFront() { return front; }
 };
 
-// ==========================================
-// 5. Danh sách điểm trả (Quản lý khách trong thang)
-// ==========================================
 class DestinationList {
 private:
     Node* head;
@@ -107,48 +79,35 @@ private:
 
 public:
     DestinationList() : head(nullptr), passengerCount(0) {}
+    ~DestinationList();
 
-    // Chèn tầng đến vào danh sách (đã sắp xếp theo chiều di chuyển)
     void insertSorted(Passenger p);
-
-    // Xóa khách khi đến tầng trả — trả về tổng weight đã trả
     float removeByFloor(int floor);
-
-    // Kiểm tra tầng hiện tại có khách muốn xuống không
     bool contains(int floor);
-
-    // Lay tang tiep theo can dung
     int getNextStop();
-
-    // Hien thi danh sach tang can tra khach
     void display();
-
-    // Tính tổng trọng lượng trong thang
     float totalWeight();
-
     int getPassengerCount() { return passengerCount; }
-
     bool isEmpty() { return head == nullptr; }
+    void clear();
+    Node* getHead() { return head; }
 };
 
-// ==========================================
-// 6. Bộ điều khiển Thang máy (Lớp chính)
-// ==========================================
 class Elevator {
 private:
     int currentFloor;
-    int direction;      // Sử dụng enum Direction
+    int direction;
     float currentWeight;
     float maxWeight;
     int maxPassengers;
-    bool isOverloaded;  // Trạng thái quá tải
+    bool isOverloaded;
 
-    PriorityQueue waitList;    // Danh sách chờ bên ngoài
-    DestinationList destList;  // Danh sách trả bên trong
+    PriorityQueue waitList;
+    DestinationList destList;
+    LinkedList serviceHistory;
 
-    // Hàm nội bộ xử lý logic
-    void determineDirection();   // Thuật toán chọn hướng (LOOK)
-    void checkOverloadSafety();  // Kiểm tra an toàn trọng tải
+    void determineDirection();
+    void checkOverloadSafety();
 
 public:
     Elevator(float _maxWeight = 800.0, int _maxPassengers = 10)
@@ -156,27 +115,25 @@ public:
         maxWeight(_maxWeight), maxPassengers(_maxPassengers), isOverloaded(false) {
     }
 
-    // Các hành động chính
-    void move();       // Di chuyển thang máy qua từng tầng
-    void pickUp();     // Đón khách từ waitList
-    void dropOff();    // Trả khách tại destList
+    void move();
+    void pickUp();
+    void dropOff();
+    bool isFull();
+    void displayStatus();
+    void addRequest(Passenger p);
+    void loadRequests(const string& filename);
+    void runOneStep();
+    void runAutomatic();
+    void reset();
+    void searchPassenger(int id);
 
-    bool isFull();     // Kiểm tra có bị quá tải không
-    void displayStatus(); // In trạng thái ra màn hình
-
-    // Hàm tiện ích cho main
-    void addRequest(Passenger p);             // Thêm yêu cầu vào waitList
-    void loadRequests(const string& filename); // Đọc yêu cầu từ file
-    void runOneStep();                         // Chạy 1 bước (move + pickup + dropoff)
-    void runAutomatic();                       // Chạy tự động đến hết khách
-
-    // Getters
     int getCurrentFloor() { return currentFloor; }
     int getDirection() { return direction; }
     float getCurrentWeight() { return currentWeight; }
     bool getIsOverloaded() { return isOverloaded; }
     PriorityQueue& getWaitList() { return waitList; }
     DestinationList& getDestList() { return destList; }
+    LinkedList& getServiceHistory() { return serviceHistory; }
 };
 
 #endif

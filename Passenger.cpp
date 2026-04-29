@@ -1,8 +1,5 @@
 #include "Elevator_Management_System.h"
 
-// ==========================================
-// LinkedList: Destructor
-// ==========================================
 LinkedList::~LinkedList()
 {
     Node* current = head;
@@ -14,9 +11,6 @@ LinkedList::~LinkedList()
     }
 }
 
-// ==========================================
-// LinkedList: Thêm hành khách vào cuối danh sách
-// ==========================================
 void LinkedList::insertNode(Passenger p)
 {
     Node* newNode = new Node(p);
@@ -33,15 +27,11 @@ void LinkedList::insertNode(Passenger p)
     temp->next = newNode;
 }
 
-// ==========================================
-// LinkedList: Xóa hành khách theo ID
-// ==========================================
 bool LinkedList::removeNode(int id)
 {
     if (head == nullptr)
         return false;
 
-    // Nếu người cần xóa nằm ở đầu danh sách
     if (head->data.id == id)
     {
         Node* temp = head;
@@ -50,7 +40,6 @@ bool LinkedList::removeNode(int id)
         return true;
     }
 
-    // Tìm người cần xóa ở giữa hoặc cuối danh sách
     Node* current = head;
     while (current->next != nullptr && current->next->data.id != id)
     {
@@ -58,7 +47,7 @@ bool LinkedList::removeNode(int id)
     }
 
     if (current->next == nullptr)
-        return false; // Không tìm thấy ID
+        return false;
 
     Node* temp = current->next;
     current->next = current->next->next;
@@ -66,9 +55,6 @@ bool LinkedList::removeNode(int id)
     return true;
 }
 
-// ==========================================
-// LinkedList: Duyệt và in danh sách hành khách
-// ==========================================
 void LinkedList::displayList()
 {
     if (head == nullptr)
@@ -90,9 +76,6 @@ void LinkedList::displayList()
          << endl;
 }
 
-// ==========================================
-// LinkedList: Ghi dữ liệu hiện tại ra file .txt
-// ==========================================
 void LinkedList::saveToFile(const string& filename)
 {
     ofstream outFile(filename);
@@ -103,7 +86,6 @@ void LinkedList::saveToFile(const string& filename)
     }
 
     Node* temp = head;
-    // Cấu trúc lưu: ID fromFloor toFloor weight
     while (temp != nullptr)
     {
         outFile << temp->data.id << " "
@@ -116,9 +98,6 @@ void LinkedList::saveToFile(const string& filename)
     cout << "[System] Da ghi du lieu ra file: " << filename << endl;
 }
 
-// ==========================================
-// LinkedList: Đọc dữ liệu từ file .txt và thêm vào danh sách
-// ==========================================
 void LinkedList::loadFromFile(const string& filename)
 {
     ifstream inFile(filename);

@@ -1,21 +1,32 @@
 #include "Elevator_Management_System.h"
-#include <cmath> // dùng abs()
+#include <cmath>
 
-// ==========================================
-// PUSH: Thêm khách vào queue (chưa sắp xếp)
-// ==========================================
+PriorityQueue::~PriorityQueue()
+{
+    clear();
+}
+
+void PriorityQueue::clear()
+{
+    while (front != nullptr)
+    {
+        Node* temp = front;
+        front = front->next;
+        delete temp;
+    }
+    count = 0;
+}
+
 void PriorityQueue::push(Passenger p)
 {
     Node* newNode = new Node(p);
 
-    // Nếu queue rỗng
     if (front == nullptr)
     {
         front = newNode;
     }
     else
     {
-        // thêm vào cuối (FIFO trước, sau sẽ sort)
         Node* temp = front;
         while (temp->next != nullptr)
         {
@@ -27,9 +38,6 @@ void PriorityQueue::push(Passenger p)
     count++;
 }
 
-// ==========================================
-// POP: Lấy khách ưu tiên nhất (đầu danh sách)
-// ==========================================
 Passenger PriorityQueue::pop()
 {
     if (front == nullptr)
@@ -48,9 +56,6 @@ Passenger PriorityQueue::pop()
     return p;
 }
 
-// ==========================================
-// PEEK: Xem khách ưu tiên nhất (không xóa)
-// ==========================================
 Passenger PriorityQueue::peek()
 {
     if (front == nullptr)
@@ -60,16 +65,11 @@ Passenger PriorityQueue::peek()
     return front->data;
 }
 
-// ==========================================
-// UPDATE PRIORITY (QUAN TRỌNG)
-// Sắp xếp lại theo khoảng cách gần nhất
-// ==========================================
 void PriorityQueue::updatePriority(int currentFloor)
 {
     if (front == nullptr || front->next == nullptr)
         return;
 
-    // Dùng bubble sort trên linked list (dễ hiểu)
     bool swapped;
     do
     {
@@ -81,7 +81,6 @@ void PriorityQueue::updatePriority(int currentFloor)
             int dist1 = abs(curr->data.fromFloor - currentFloor);
             int dist2 = abs(curr->next->data.fromFloor - currentFloor);
 
-            // nếu node sau gần hơn → đổi chỗ
             if (dist1 > dist2)
             {
                 Passenger temp = curr->data;
@@ -97,9 +96,6 @@ void PriorityQueue::updatePriority(int currentFloor)
     } while (swapped);
 }
 
-// ==========================================
-// DISPLAY: Hiển thị danh sách khách đang chờ
-// ==========================================
 void PriorityQueue::display()
 {
     if (front == nullptr)
@@ -126,9 +122,6 @@ void PriorityQueue::display()
     cout << "-------------------------------------------\n";
 }
 
-// ==========================================
-// HAS PASSENGER AT: Kiểm tra có khách chờ ở tầng này không
-// ==========================================
 bool PriorityQueue::hasPassengerAt(int floor)
 {
     Node* temp = front;
@@ -141,15 +134,11 @@ bool PriorityQueue::hasPassengerAt(int floor)
     return false;
 }
 
-// ==========================================
-// POP ALL AT: Lấy tất cả khách chờ tại tầng (xóa khỏi queue)
-// ==========================================
 Node* PriorityQueue::popAllAt(int floor)
 {
     Node* result = nullptr;
     Node* resultTail = nullptr;
 
-    // Xóa từ đầu
     while (front != nullptr && front->data.fromFloor == floor)
     {
         Node* temp = front;
@@ -169,7 +158,6 @@ Node* PriorityQueue::popAllAt(int floor)
         }
     }
 
-    // Xóa từ giữa/cuối
     Node* curr = front;
     while (curr != nullptr && curr->next != nullptr)
     {

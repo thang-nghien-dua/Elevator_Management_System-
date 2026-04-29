@@ -1,47 +1,26 @@
 #include "Elevator_Management_System.h"
 
-// ==========================================
-// DETERMINE DIRECTION: Thuật toán LOOK chọn hướng
-// - Ưu tiên tiếp tục hướng hiện tại nếu còn khách
-// - Đổi hướng nếu không còn khách theo hướng hiện tại
-// - IDLE nếu không còn ai
-// ==========================================
 void Elevator::determineDirection()
 {
     bool hasAbove = false;
     bool hasBelow = false;
 
-    // Kiểm tra destList (khách đang trong thang)
-    if (!destList.isEmpty())
+    Node* curr = destList.getHead();
+    while (curr != nullptr)
     {
-        // Duyệt destList xem có tầng nào trên/dưới không
-        // Dùng getNextStop() để xác định — danh sách đã sắp xếp tăng dần
-        int nextStop = destList.getNextStop();
-        if (nextStop > currentFloor) hasAbove = true;
-        if (nextStop < currentFloor) hasBelow = true;
-        if (nextStop == currentFloor)
-        {
-            // Tầng hiện tại có khách xuống, giữ nguyên hướng
-            return;
-        }
+        if (curr->data.toFloor > currentFloor) hasAbove = true;
+        if (curr->data.toFloor < currentFloor) hasBelow = true;
+        curr = curr->next;
     }
 
-    // Kiểm tra waitList (khách đang chờ bên ngoài)
-    // Cập nhật priority theo vị trí hiện tại
-    waitList.updatePriority(currentFloor);
-    if (!waitList.isEmpty())
+    curr = waitList.getFront();
+    while (curr != nullptr)
     {
-        Passenger next = waitList.peek();
-        if (next.fromFloor > currentFloor) hasAbove = true;
-        if (next.fromFloor < currentFloor) hasBelow = true;
-        if (next.fromFloor == currentFloor)
-        {
-            // Có khách ngay tầng này
-            return;
-        }
+        if (curr->data.fromFloor > currentFloor) hasAbove = true;
+        if (curr->data.fromFloor < currentFloor) hasBelow = true;
+        curr = curr->next;
     }
 
-    // Thuật toán LOOK: ưu tiên tiếp tục hướng hiện tại
     if (direction == UP)
     {
         if (hasAbove)
@@ -60,13 +39,10 @@ void Elevator::determineDirection()
         else
             direction = IDLE;
     }
-    else // IDLE
+    else
     {
         if (hasAbove && hasBelow)
-        {
-            // Chọn hướng có khách gần hơn
-            direction = UP; // mặc định đi lên trước
-        }
+            direction = UP;
         else if (hasAbove)
             direction = UP;
         else if (hasBelow)
@@ -76,9 +52,6 @@ void Elevator::determineDirection()
     }
 }
 
-// ==========================================
-// CHECK OVERLOAD SAFETY: Kiểm tra an toàn trọng tải
-// ==========================================
 void Elevator::checkOverloadSafety()
 {
     currentWeight = destList.totalWeight();
@@ -96,12 +69,8 @@ void Elevator::checkOverloadSafety()
     }
 }
 
-// ==========================================
-// MOVE: Di chuyển thang máy 1 tầng theo hướng hiện tại
-// ==========================================
 void Elevator::move()
 {
-    // Xác định hướng trước khi di chuyển
     determineDirection();
 
     if (direction == IDLE)
@@ -110,10 +79,8 @@ void Elevator::move()
         return;
     }
 
-    // Di chuyển 1 tầng
     currentFloor += direction;
 
-    // Giới hạn tầng (1 đến 20)
     if (currentFloor < 1) currentFloor = 1;
     if (currentFloor > 20) currentFloor = 20;
 
@@ -122,18 +89,13 @@ void Elevator::move()
          << " -> Tang " << currentFloor << "\n";
 }
 
-// ==========================================
-// PICKUP: Đón khách tại tầng hiện tại từ waitList
-// ==========================================
 void Elevator::pickUp()
 {
     if (waitList.isEmpty()) return;
     if (!waitList.hasPassengerAt(currentFloor)) return;
 
-    // Kiểm tra quá tải trước
     checkOverloadSafety();
 
-    // Lấy tất cả khách chờ tại tầng hiện tại
     Node* passengers = waitList.popAllAt(currentFloor);
 
     Node* curr = passengers;
@@ -141,7 +103,6 @@ void Elevator::pickUp()
     {
         Node* next = curr->next;
 
-        // Kiểm tra có thể đón thêm không (trọng tải + số người)
         float newWeight = currentWeight + curr->data.weight;
         if (newWeight <= maxWeight && destList.getPassengerCount() < maxPassengers)
         {
@@ -150,14 +111,12 @@ void Elevator::pickUp()
                  << " -> muon den tang " << curr->data.toFloor
                  << " (" << curr->data.weight << " kg)\n";
 
-            // Thêm vào destList (danh sách trả khách)
             destList.insertSorted(curr->data);
             currentWeight = destList.totalWeight();
             delete curr;
         }
         else
         {
-            // Quá tải — đưa khách lại vào waitList
             cout << "[Tu choi] Khong the don khach ID " << curr->data.id
                  << " (Qua tai hoac day thang)\n";
             curr->next = nullptr;
@@ -171,37 +130,35 @@ void Elevator::pickUp()
     checkOverloadSafety();
 }
 
-// ==========================================
-// DROPOFF: Trả khách tại tầng hiện tại
-// ==========================================
 void Elevator::dropOff()
 {
     if (destList.isEmpty()) return;
     if (!destList.contains(currentFloor)) return;
 
-    float removedWeight = destList.removeByFloor(currentFloor);
-    currentWeight -= removedWeight;
-    if (currentWeight < 0) currentWeight = 0;
+    Node* curr = destList.getHead();
+    while (curr != nullptr)
+    {
+        if (curr->data.toFloor == currentFloor)
+        {
+            serviceHistory.insertNode(curr->data);
+            cout << "[Tra khach] ID " << curr->data.id
+                 << " da xuong tai tang " << currentFloor
+                 << " (" << curr->data.weight << " kg)\n";
+        }
+        curr = curr->next;
+    }
 
-    cout << "[Tra khach] Da tra khach tai tang " << currentFloor
-         << " (giam " << removedWeight << " kg)\n";
-
-    // Cập nhật trạng thái quá tải
+    destList.removeByFloor(currentFloor);
+    currentWeight = destList.totalWeight();
     checkOverloadSafety();
 }
 
-// ==========================================
-// IS FULL: Kiểm tra thang máy có đầy/quá tải không
-// ==========================================
 bool Elevator::isFull()
 {
     return (currentWeight >= maxWeight) ||
            (destList.getPassengerCount() >= maxPassengers);
 }
 
-// ==========================================
-// DISPLAY STATUS: Hiển thị trạng thái thang máy
-// ==========================================
 void Elevator::displayStatus()
 {
     cout << "\n========================================\n";
@@ -221,14 +178,10 @@ void Elevator::displayStatus()
     cout << "Khach cho     : " << waitList.size() << " nguoi\n";
     cout << "========================================\n";
 
-    // Hiển thị chi tiết
     destList.display();
     waitList.display();
 }
 
-// ==========================================
-// ADD REQUEST: Thêm yêu cầu gọi thang máy
-// ==========================================
 void Elevator::addRequest(Passenger p)
 {
     waitList.push(p);
@@ -238,9 +191,6 @@ void Elevator::addRequest(Passenger p)
          << " (" << p.weight << " kg)\n";
 }
 
-// ==========================================
-// LOAD REQUESTS: Đọc yêu cầu từ file
-// ==========================================
 void Elevator::loadRequests(const string& filename)
 {
     ifstream inFile(filename);
@@ -264,26 +214,14 @@ void Elevator::loadRequests(const string& filename)
     cout << "[System] Da nap " << loaded << " yeu cau tu file: " << filename << "\n";
 }
 
-// ==========================================
-// RUN ONE STEP: Chạy 1 bước (trả khách -> đón khách -> di chuyển)
-// ==========================================
 void Elevator::runOneStep()
 {
     cout << "\n--- Buoc xu ly tai tang " << currentFloor << " ---\n";
-
-    // Bước 1: Trả khách trước (nếu có)
     dropOff();
-
-    // Bước 2: Đón khách (nếu có)
     pickUp();
-
-    // Bước 3: Di chuyển đến tầng tiếp theo
     move();
 }
 
-// ==========================================
-// RUN AUTOMATIC: Chạy tự động đến khi hết tất cả khách
-// ==========================================
 void Elevator::runAutomatic()
 {
     cout << "\n============================================\n";
@@ -291,23 +229,17 @@ void Elevator::runAutomatic()
     cout << "============================================\n";
 
     int step = 0;
-    int maxSteps = 200; // giới hạn vòng lặp tránh loop vô hạn
+    int maxSteps = 200;
 
     while ((!waitList.isEmpty() || !destList.isEmpty()) && step < maxSteps)
     {
         step++;
         cout << "\n>>>>> BUOC " << step << " <<<<<\n";
 
-        // Trả khách tại tầng hiện tại
         dropOff();
-
-        // Đón khách tại tầng hiện tại
         pickUp();
-
-        // Di chuyển
         move();
 
-        // Hiển thị trạng thái ngắn gọn
         cout << "[Tang: " << currentFloor
              << " | Trong thang: " << destList.getPassengerCount()
              << " | Cho: " << waitList.size()
@@ -322,4 +254,63 @@ void Elevator::runAutomatic()
     cout << "============================================\n";
 
     displayStatus();
+}
+
+void Elevator::reset()
+{
+    waitList.clear();
+    destList.clear();
+    currentFloor = 1;
+    direction = IDLE;
+    currentWeight = 0;
+    isOverloaded = false;
+}
+
+void Elevator::searchPassenger(int id)
+{
+    cout << "\n--- TIM KIEM KHACH HANG ID: " << id << " ---\n";
+    bool found = false;
+
+    Node* curr = waitList.getFront();
+    while (curr != nullptr)
+    {
+        if (curr->data.id == id)
+        {
+            cout << "[Tim thay] Dang CHO tai tang " << curr->data.fromFloor
+                 << " -> muon den tang " << curr->data.toFloor
+                 << " (" << curr->data.weight << " kg)\n";
+            found = true;
+        }
+        curr = curr->next;
+    }
+
+    curr = destList.getHead();
+    while (curr != nullptr)
+    {
+        if (curr->data.id == id)
+        {
+            cout << "[Tim thay] Dang TRONG THANG, se xuong tang " << curr->data.toFloor
+                 << " (" << curr->data.weight << " kg)\n";
+            found = true;
+        }
+        curr = curr->next;
+    }
+
+    curr = serviceHistory.getHead();
+    while (curr != nullptr)
+    {
+        if (curr->data.id == id)
+        {
+            cout << "[Tim thay] Da PHUC VU: tu tang " << curr->data.fromFloor
+                 << " den tang " << curr->data.toFloor
+                 << " (" << curr->data.weight << " kg)\n";
+            found = true;
+        }
+        curr = curr->next;
+    }
+
+    if (!found)
+    {
+        cout << "[Khong tim thay] Khong co khach hang voi ID " << id << "\n";
+    }
 }
